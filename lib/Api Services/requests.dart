@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:fluitter_machine_test/components/utils.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/login_model.dart';
 import 'api_end_points.dart';
 import 'package:http/http.dart' as http;
@@ -13,146 +13,162 @@ class ApiRequests {
   final String baseUrl = Endpoints.baseUrl;
   final String login = Endpoints.login;
   final String signup = Endpoints.signup;
+  final String logoutUrl = Endpoints.logout;
+  static String loginToken = "";
 
   LoginModel? loginModel;
 
+  Future<void> _storeToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('loginToken', token);
+  }
 
+  Future<String?> retrieveToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('loginToken');
+  }
 
+  Future<void> _clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('loginToken');
+  }
 
-  Future<String?> userSignIn(String email, String password, BuildContext context) async {
-    var request = http.MultipartRequest('POST', Uri.parse("$baseUrl/login"));
-    request.fields.addAll({'email': email, 'password': password});
+  /// Signin api
+  Future<String?> userSignIn(
+      String email, String password, BuildContext context) async {
+    var url = Uri.parse('$baseUrl$login');
+    var response;
 
     try {
-      http.StreamedResponse response = await request.send();
+      response = await http.post(
+        url,
+        body: {'email': email, 'password': password},
+      );
+
       if (response.statusCode == 200) {
-        var result = await response.stream.bytesToString();
-        var finalResult = jsonDecode(result);
-        String token = finalResult['token']; // Assuming your response contains a token
-        Utils.mySnackBar(context, title: '${finalResult['message']}');
+        var result = jsonDecode(response.body);
+        String token = result['record']
+            ['authtoken']; // Assuming your response contains a token
+        if (token.isNotEmpty) {
+          loginToken = token;
+          _storeToken(token); // Store the token in SharedPreferences
+          // Optionally, fetch and store user details here
+          SharedPreferences preferences = await SharedPreferences.getInstance();
+          preferences.setBool("isLoggedIn", true);
+          preferences.setString("userId", result['record']['id'].toString());
+          preferences.setString(
+              "profileImg", result['record']['profileImg'].toString());
+          preferences.setString("userName",
+              '${result['record']['firstName']} ${result['record']['lastName']}');
+          preferences.setString("userEmail", result['record']['email']);
+          Navigator.pushReplacementNamed(
+              context, '/home'); // Navigate to home screen
+          Utils.mySnackBar(context, title: '${result['message']}');
+        }
+
         return token;
       } else {
-        var errorResult = await response.stream.bytesToString();
-        var finalResult = jsonDecode(errorResult);
-        Utils.mySnackBar(context, title: '${finalResult['message']}');
+        var errorResult = jsonDecode(response.body);
+        Utils.mySnackBar(context, title: '${errorResult['message']}');
         return null;
       }
     } catch (e) {
-      print('Error signing in: $e');
+      if (kDebugMode) {
+        print('Error signing in: $e');
+      }
       Fluttertoast.showToast(msg: 'Failed to sign in. Please try again.');
       return null;
     }
   }
 
-
-  // Future<String?> userSignIn(String email, String password, BuildContext context) async {
-  //   var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$login"));
-  //   request.fields.addAll({'email': email, 'password': password});
-  //   http.StreamedResponse response = await request.send();
-  //   if (response.statusCode == 200) {
-  //     var result = await response.stream.bytesToString();
-  //     var finalResult = jsonDecode(result);
-  //     String token = finalResult['token']; // Assuming your response contains a token
-  //     Utils.mySnackBar(context, title: '${finalResult['message']}');
-  //     return token;
-  //   } else {
-  //     var errorResult = await response.stream.bytesToString();
-  //     var finalResult = jsonDecode(errorResult);
-  //     Utils.mySnackBar(context, title: '${finalResult['message']}');
-  //     return null;
-  //   }
-  // }
-
-  /// Signin api
-  // Future<LoginModel?> userSignIn(String email, String password, context) async {
-  //   var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$login"));
-  //   request.fields.addAll({'email': email, 'password': password});
-  //   http.StreamedResponse response = await request.send();
-  //   debugPrint("status code : ${response.statusCode}");
-  //   if (response.statusCode == 200) {
-  //     var result = await response.stream.bytesToString();
-  //     var finalResult = jsonDecode(result);
-  //     debugPrint("log in response : $finalResult");
-  //     loginModel = LoginModel.fromJson(finalResult);
-  //     Utils.mySnackBar(context, title: '${finalResult['message']}');
-  //   } else {
-  //     var errorResult = await response.stream.bytesToString();
-  //     var finalResult = jsonDecode(errorResult);
-  //     Utils.mySnackBar(context, title: '${finalResult['message']}');
-  //     debugPrint(response.reasonPhrase);
-  //   }
-  //   return loginModel;
-  // }
+  // (email, password,firstName,lastName, countryCode,phoneNumber,confirmPassword,context)
 
   /// Signup api
   Future<void> userSignUp(
-      String firstName,
-      String? lastName,
-      String? email,
-      String password,
-      String? confirmPassword,
-      String? countryCode,
-      String? phoneNumber,
+      {email,
+      password,
+      firstName,
+      lastName,
+      countryCode,
+      phoneNumber,
+      confirmPassword,
+      context}) async {
+    var url = Uri.parse('$baseUrl$signup');
+    var response;
 
-      BuildContext context) async {
-    var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$signup"));
-    request.fields.addAll({
-      'first_name': firstName,
-      'last_name': lastName.toString(),
-      'email': email.toString(),
-      'password': password,
-      'confirm_password': confirmPassword.toString(),
-      'country_code': countryCode.toString(),
-      'phone_no': phoneNumber.toString()
+    try {
+      var request = http.MultipartRequest('POST', url);
+      request.fields.addAll({
+        'first_name': firstName,
+        'last_name': lastName ?? '',
+        'email': email ?? '',
+        'password': password,
+        'confirm_password': confirmPassword ?? '',
+        'country_code': countryCode ?? '',
+        'phone_no': phoneNumber ?? '',
+      });
 
-    });
-    http.StreamedResponse response = await request.send();
-    debugPrint("status code : ${response.statusCode}");
-    if (response.statusCode == 200) {
-      var result = await response.stream.bytesToString();
-      var finalResult = jsonDecode(result);
-      debugPrint("sign up response : $finalResult");
-      if (finalResult['error'] == false) {
-        SharedPreferences preferences = await SharedPreferences.getInstance();
-        preferences.setBool("isLoggedIn", true);
-        preferences.setString("userId", finalResult['data']['id'] ?? "");
-        preferences.setString(
-            "userName", finalResult['data']['username'] ?? "");
-        preferences.setString("userEmail", finalResult['data']['email'] ?? "");
-        Navigator.pushNamed(context, '/'); // Navigate to home screen
-        Utils.mySnackBar(context, title: '${finalResult['message']}');
+      response = await request.send();
+
+      if (response.statusCode == true) {
+        var result = await response.stream.bytesToString();
+        var finalResult = jsonDecode(result);
+        debugPrint("Sign-up response: $finalResult");
+
+        if (!finalResult['error']) {
+          SharedPreferences preferences = await SharedPreferences.getInstance();
+          preferences.setBool("isLoggedIn", true);
+          preferences.setString("userId", finalResult['data']['id'] ?? "");
+          preferences.setString("userName", finalResult['data']['username'] ?? "");
+          preferences.setString("userEmail", finalResult['data']['email'] ?? "");
+          Navigator.pushNamed(context, '/'); // Navigate to home screen
+          Utils.mySnackBar(context, title: '${finalResult['message']}');
+        } else {
+          Utils.mySnackBar(context, title: '${finalResult['message']}');
+        }
       } else {
-        Utils.mySnackBar(context, title: '${finalResult['message']}');
+        debugPrint('Sign-up failed: ${response.reasonPhrase}');
+        Fluttertoast.showToast(msg: 'Failed to sign up. Please try again.');
       }
-    } else {
-      debugPrint(response.reasonPhrase);
+    } catch (e) {
+      print('Error signing up: $e');
+      Fluttertoast.showToast(msg: 'Failed to sign up. Please try again.');
     }
   }
 
-  /// Get Data
-  Future<void> getUserList(
-      String mobile, String password, audioController, context) async {
-    var headers = {'Cookie': 'ci_session=c7797mp92d9k6gmq38epdr8hm70h9vab'};
-    var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$signup"));
-    request.fields.addAll({'mobile': mobile, 'password': password});
-    request.headers.addAll(headers);
-    http.StreamedResponse response = await request.send();
-    debugPrint("status code : ${response.statusCode}");
-    if (response.statusCode == 200) {
-      var result = await response.stream.bytesToString();
-      var finalResult = jsonDecode(result);
-      if (finalResult['error'] == false) {
+  ///logout
+
+  Future<void> logout(BuildContext context) async {
+    var url = Uri.parse('$baseUrl$logoutUrl');
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      var response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${prefs.getString('loginToken')}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Clear token from SharedPreferences
+        await _clearToken();
         SharedPreferences preferences = await SharedPreferences.getInstance();
-        preferences.setBool("isLoggedIn", true);
-        preferences.setString("userId", finalResult['data']['id'] ?? "");
-        preferences.setString(
-            "userName", finalResult['data']['username'] ?? "");
-        preferences.setString("userEmail", finalResult['data']['email'] ?? "");
+        preferences.setBool("isLoggedIn", false);
+        preferences.remove("userId");
+        preferences.remove("userName");
+        preferences.remove("userEmail");
+
+        // Navigate to login screen
+        Navigator.pushReplacementNamed(context, '/login');
+        Utils.mySnackBar(context, title: 'Logged out successfully');
       } else {
-        Utils.mySnackBar(context, title: '${finalResult['message']}');
+        var errorResult = jsonDecode(response.body);
+        Utils.mySnackBar(context, title: '${errorResult['message']}');
       }
-    } else {
-      debugPrint(response.reasonPhrase);
+    } catch (e) {
+      print('Error logging out: $e');
+      Fluttertoast.showToast(msg: 'Failed to log out. Please try again.');
     }
   }
 }

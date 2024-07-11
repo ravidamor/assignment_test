@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/login_controller.dart';
 
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../controllers/login_controller.dart';
+class SignUpForm extends StatefulWidget {
+  const SignUpForm({super.key});
 
-class SignUpForm extends StatelessWidget {
+  @override
+  State<SignUpForm> createState() => _SignUpFormState();
+}
+
+class _SignUpFormState extends State<SignUpForm> {
+  bool _obscureText = true; // State variable to toggle password visibility
+  bool _obscureTextConfirmPassword =
+      true; // State variable to toggle Confirm password visibility
+
   final _signUpFormKey =
-      GlobalKey<FormState>(); // Key to manage form validation
+      GlobalKey<FormState>(); // Key to manage form validat ion
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +124,9 @@ class SignUpForm extends StatelessWidget {
 
             // Password Field
             TextFormField(
-              onChanged: (value) => loginController.password = value,
+              onChanged: (value) {
+                // Handle onChanged event
+              },
               decoration: InputDecoration(
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 label: const Text('Password'),
@@ -135,9 +144,20 @@ class SignUpForm extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5.0),
                 ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                ),
               ),
               keyboardType: TextInputType.text,
-              obscureText: true,
+              obscureText: _obscureText,
+              // Toggle visibility based on _obscureText
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your password';
@@ -152,7 +172,9 @@ class SignUpForm extends StatelessWidget {
 
             // Confirm Password Field
             TextFormField(
-              onChanged: (value) => loginController.confirmPassword = value,
+              onChanged: (value) {
+                // Handle onChanged event
+              },
               decoration: InputDecoration(
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 label: const Text('Confirm Password'),
@@ -170,9 +192,23 @@ class SignUpForm extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5.0),
                 ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureTextConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureTextConfirmPassword =
+                          !_obscureTextConfirmPassword;
+                    });
+                  },
+                ),
               ),
               keyboardType: TextInputType.text,
-              obscureText: true,
+              obscureText: _obscureTextConfirmPassword,
+              // Toggle visibility based on _obscureText
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please confirm your password';
@@ -256,11 +292,10 @@ class SignUpForm extends StatelessWidget {
                 onPressed: loginController.isLoading
                     ? null
                     : () {
-                  if (_signUpFormKey.currentState?.validate() ?? false) {
-                    loginController.userSignUp(context);
-                  }
-                },
-
+                        if (_signUpFormKey.currentState?.validate() ?? false) {
+                          loginController.userSignUp(context);
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue,
@@ -272,8 +307,8 @@ class SignUpForm extends StatelessWidget {
                 ),
                 child: loginController.isLoading
                     ? const CircularProgressIndicator(
-                  color: Colors.white,
-                )
+                        color: Colors.white,
+                      )
                     : const Text('Sign Up'),
               ),
             ),

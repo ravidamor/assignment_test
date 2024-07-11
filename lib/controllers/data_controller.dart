@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/data_model.dart';
 
 class DataController {
   late DataModel _dataModel;
   bool isLoading = false;
-  final String _jwtToken;
 
-  DataController(this._jwtToken) {
+
+  DataController() {
     _dataModel = DataModel(
         userList: [], currentPage: 0, lastPage: 1, total: 0, perPage: 10);
   }
@@ -21,13 +22,14 @@ class DataController {
     if (isLoading) return;
 
     isLoading = true;
+    final prefs = await SharedPreferences.getInstance();
 
     try {
       final response = await http.get(
         Uri.parse(
             'https://mmfinfotech.co/machine_test/api/userList?page=$page'),
         headers: {
-          'Authorization': 'Bearer $_jwtToken',
+          'Authorization': 'Bearer ${prefs.getString('loginToken')}',
         },
       );
 
@@ -82,8 +84,21 @@ class ViewModel with ChangeNotifier {
   bool get hasError => _hasError;
 
   ViewType get viewType => _viewType; // Getter for viewType
+
   void setViewType(ViewType newViewType) {
     _viewType = newViewType;
+    notifyListeners();
+  }
+
+  String image = '';
+  String userName = '';
+  String email = '';
+
+  Future<void> getData() async {
+    final prefs = await SharedPreferences.getInstance();
+    image = prefs.getString("profileImg") ?? '';
+    userName = prefs.getString("userName") ?? '';
+    email = prefs.getString("userEmail") ?? '';
     notifyListeners();
   }
 
@@ -121,4 +136,3 @@ class ViewModel with ChangeNotifier {
     notifyListeners();
   }
 }
-
