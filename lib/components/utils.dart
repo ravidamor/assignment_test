@@ -1,19 +1,25 @@
-
 import 'package:flutter/material.dart';
 
 class Utils {
   static void mySnackBar(
-  BuildContext context,
-      {
+    BuildContext context, {
     String title = "",
     String msg = "",
     double? maxWidth,
     Duration duration = const Duration(milliseconds: 1100),
   }) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(title),duration: const Duration(seconds: 1),),
+      SnackBar(
+        content: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.green,
+        duration: duration,
+      ),
     );
   }
 }
-
-

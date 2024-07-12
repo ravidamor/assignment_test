@@ -55,6 +55,11 @@ class _SignUpFormState extends State<SignUpForm> {
                 }
                 return null;
               },
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black45,
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -85,6 +90,11 @@ class _SignUpFormState extends State<SignUpForm> {
                 }
                 return null;
               },
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black45,
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -119,14 +129,17 @@ class _SignUpFormState extends State<SignUpForm> {
                 }
                 return null;
               },
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black45,
+              ),
             ),
             const SizedBox(height: 20),
 
             // Password Field
             TextFormField(
-              onChanged: (value) {
-                // Handle onChanged event
-              },
+              onChanged: (value) => loginController.password = value,
               decoration: InputDecoration(
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 label: const Text('Password'),
@@ -167,14 +180,17 @@ class _SignUpFormState extends State<SignUpForm> {
                 }
                 return null;
               },
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black45,
+              ),
             ),
             const SizedBox(height: 20),
 
             // Confirm Password Field
             TextFormField(
-              onChanged: (value) {
-                // Handle onChanged event
-              },
+              onChanged: (value) => loginController.confirmPassword = value,
               decoration: InputDecoration(
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 label: const Text('Confirm Password'),
@@ -218,6 +234,11 @@ class _SignUpFormState extends State<SignUpForm> {
                 }
                 return null;
               },
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black45,
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -252,6 +273,11 @@ class _SignUpFormState extends State<SignUpForm> {
                 }
                 return null;
               },
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black45,
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -283,13 +309,18 @@ class _SignUpFormState extends State<SignUpForm> {
                 }
                 return null;
               },
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black45,
+              ),
             ),
             const SizedBox(height: 20),
-            // Sign Up Button
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: loginController.isLoading
+                onPressed: loginController.isLoadingSignUp
                     ? null
                     : () {
                         if (_signUpFormKey.currentState?.validate() ?? false) {
@@ -300,14 +331,19 @@ class _SignUpFormState extends State<SignUpForm> {
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
-                    side: BorderSide(
-                        color: Colors.blue.shade400), // Border color and width
+                    borderRadius: BorderRadius.circular(8.0),
+                    side: BorderSide(color: Colors.blue.shade400),
                   ),
                 ),
-                child: loginController.isLoading
-                    ? const CircularProgressIndicator(
-                        color: Colors.white,
+                child: loginController.isLoadingSignUp
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.blue,
+                          strokeWidth: 3.5,
+                          color: Colors.white,
+                        ),
                       )
                     : const Text('Sign Up'),
               ),
@@ -333,5 +369,3 @@ class _SignUpFormState extends State<SignUpForm> {
     );
   }
 }
-
-

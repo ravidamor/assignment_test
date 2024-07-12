@@ -64,10 +64,6 @@ class _SignInFormState extends State<SignInForm> {
             ),
             const SizedBox(height: 20),
 
-
-
-
-
             TextFormField(
               onChanged: (value) => loginController.password = value,
               decoration: InputDecoration(
@@ -127,20 +123,23 @@ class _SignInFormState extends State<SignInForm> {
                           loginController.userSignIn(context);
                         }
                       },
-
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue, // Text color
+                  backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
-                    side: BorderSide(
-                        color: Colors.blue.shade400), // Border color and width
+                    borderRadius: BorderRadius.circular(8.0),
+                    side: BorderSide(color: Colors.blue.shade400),
                   ),
                 ),
-
                 child: loginController.isLoading
-                    ? const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.blue,
+                          strokeWidth: 3.5,
+                          color: Colors.white,
+                        ),
                       )
                     : const Text('Login'),
               ),

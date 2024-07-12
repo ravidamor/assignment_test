@@ -8,7 +8,6 @@ class DataController {
   late DataModel _dataModel;
   bool isLoading = false;
 
-
   DataController() {
     _dataModel = DataModel(
         userList: [], currentPage: 0, lastPage: 1, total: 0, perPage: 10);

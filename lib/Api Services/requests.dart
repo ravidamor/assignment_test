@@ -110,7 +110,7 @@ class ApiRequests {
 
       response = await request.send();
 
-      if (response.statusCode == true) {
+      if (response.statusCode == 200) {
         var result = await response.stream.bytesToString();
         var finalResult = jsonDecode(result);
         debugPrint("Sign-up response: $finalResult");
@@ -119,8 +119,10 @@ class ApiRequests {
           SharedPreferences preferences = await SharedPreferences.getInstance();
           preferences.setBool("isLoggedIn", true);
           preferences.setString("userId", finalResult['data']['id'] ?? "");
-          preferences.setString("userName", finalResult['data']['username'] ?? "");
-          preferences.setString("userEmail", finalResult['data']['email'] ?? "");
+          preferences.setString(
+              "userName", finalResult['data']['username'] ?? "");
+          preferences.setString(
+              "userEmail", finalResult['data']['email'] ?? "");
           Navigator.pushNamed(context, '/'); // Navigate to home screen
           Utils.mySnackBar(context, title: '${finalResult['message']}');
         } else {
@@ -158,6 +160,7 @@ class ApiRequests {
         preferences.remove("userId");
         preferences.remove("userName");
         preferences.remove("userEmail");
+        preferences.remove("authtoken");
 
         // Navigate to login screen
         Navigator.pushReplacementNamed(context, '/login');

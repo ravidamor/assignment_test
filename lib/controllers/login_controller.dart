@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../Api Services/requests.dart';
 import '../models/user_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController with ChangeNotifier {
   final UserModel _user = UserModel(
@@ -16,11 +15,19 @@ class LoginController with ChangeNotifier {
   );
 
   bool _isLoadingSignUp = false;
+  bool _isLoading = false;
 
   bool get isLoadingSignUp => _isLoadingSignUp;
 
+
+
   set isLoadingSignUp(bool value) {
     _isLoadingSignUp = value;
+    notifyListeners();
+  }
+  bool get isLoading => _isLoading;
+  set isLoading(bool value) {
+    _isLoading = value;
     notifyListeners();
   }
 
@@ -116,32 +123,20 @@ class LoginController with ChangeNotifier {
     return true;
   }
 
-  bool _isLoading = false;
-
-  bool get isLoading => _isLoading;
-
-  void setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
-
   Future<void> userSignIn(BuildContext context) async {
     if (validateEmail() && validatePassword()) {
-      _isLoading = true;
+      isLoading = true;
       try {
-        ApiRequests().userSignIn(email, password, context);
+        await ApiRequests().userSignIn(email, password, context);
       } finally {
-        _isLoading = false;
+        isLoading = false;
       }
     }
   }
 
   Future<void> userSignUp(BuildContext context) async {
     if (validateEmail() && validatePassword() && validateSignUpFields()) {
-      // await ApiRequests().userSignUp(email, password, firstName, lastName!,
-      //     countryCode, phoneNumber, confirmPassword, context);
-      // Navigator.pushReplacementNamed(context, '/');
-      _isLoadingSignUp = true;
+      isLoadingSignUp = true;
       try {
         await ApiRequests().userSignUp(
             email: email,
@@ -154,19 +149,8 @@ class LoginController with ChangeNotifier {
             context: context);
         Navigator.pushReplacementNamed(context, '/login');
       } finally {
-        _isLoadingSignUp = false;
+        isLoadingSignUp = false;
       }
     }
-  }
-
-  void userLogout(BuildContext context) async {
-    //await _clearToken();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('firstName');
-    await prefs.remove('lastName');
-    await prefs.remove('email');
-    await prefs.remove('profileImg');
-
-    Navigator.pushReplacementNamed(context, '/login');
   }
 }

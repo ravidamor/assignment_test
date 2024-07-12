@@ -18,7 +18,8 @@ class _HomeScreenUserListState extends State<HomeScreenUserList> {
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       Provider.of<ViewModel>(context, listen: false).fetchData();
-      Provider.of<ViewModel>(context, listen: false).getData(); // Fetch user data
+      Provider.of<ViewModel>(context, listen: false)
+          .getData(); // Fetch user data
     });
   }
 
@@ -31,14 +32,19 @@ class _HomeScreenUserListState extends State<HomeScreenUserList> {
             return Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: NetworkImage(viewModel.image),
+                  radius: 17,
+                  backgroundColor: Colors.grey.shade200,
+                  backgroundImage: viewModel.image.isNotEmpty
+                      ? NetworkImage(viewModel.image)
+                      : null,
                   onBackgroundImageError: (_, __) {
                     setState(() {
                       viewModel.image = ''; // Set to default value on error
                     });
                   },
                   child: viewModel.image.isEmpty
-                      ? const Icon(Icons.person, size: 40) // Default icon if no image
+                      ? const Icon(Icons.person,
+                          size: 40) // Default icon if no image
                       : null,
                 ),
                 const SizedBox(width: 10),
@@ -55,7 +61,7 @@ class _HomeScreenUserListState extends State<HomeScreenUserList> {
                     Text(
                       viewModel.email,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -270,7 +276,6 @@ class _HomeScreenUserListState extends State<HomeScreenUserList> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-
                                         Text(
                                           '${user.firstName} ${user.lastName}',
                                           style: const TextStyle(
@@ -338,7 +343,6 @@ class _HomeScreenUserListState extends State<HomeScreenUserList> {
                               );
                             },
                           ),
-
                   ),
                 ),
               ],
@@ -349,5 +353,3 @@ class _HomeScreenUserListState extends State<HomeScreenUserList> {
     );
   }
 }
-
-
