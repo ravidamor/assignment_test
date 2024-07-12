@@ -81,9 +81,9 @@ class ApiRequests {
     }
   }
 
-  // (email, password,firstName,lastName, countryCode,phoneNumber,confirmPassword,context)
 
   /// Signup api
+
   Future<void> userSignUp(
       {email,
       password,
@@ -100,12 +100,12 @@ class ApiRequests {
       var request = http.MultipartRequest('POST', url);
       request.fields.addAll({
         'first_name': firstName,
-        'last_name': lastName ?? '',
-        'email': email ?? '',
+        'last_name': lastName,
+        'email': email,
         'password': password,
-        'confirm_password': confirmPassword ?? '',
-        'country_code': countryCode ?? '',
-        'phone_no': phoneNumber ?? '',
+        'confirm_password': confirmPassword,
+        'country_code': countryCode,
+        'phone_no': phoneNumber,
       });
 
       response = await request.send();
@@ -115,18 +115,21 @@ class ApiRequests {
         var finalResult = jsonDecode(result);
         debugPrint("Sign-up response: $finalResult");
 
-        if (!finalResult['error']) {
+        Fluttertoast.showToast(msg: finalResult['message']);
+
+        if (finalResult['status'] == true) {
           SharedPreferences preferences = await SharedPreferences.getInstance();
           preferences.setBool("isLoggedIn", true);
-          preferences.setString("userId", finalResult['data']['id'] ?? "");
+          preferences.setString("userId", finalResult['data']['id'].toString());
           preferences.setString(
               "userName", finalResult['data']['username'] ?? "");
           preferences.setString(
               "userEmail", finalResult['data']['email'] ?? "");
-          Navigator.pushNamed(context, '/'); // Navigate to home screen
-          Utils.mySnackBar(context, title: '${finalResult['message']}');
+
+          // Navigate to login screen
+          Navigator.pushNamed(context, '/login');
         } else {
-          Utils.mySnackBar(context, title: '${finalResult['message']}');
+          print("Error message: ${finalResult['message']}");
         }
       } else {
         debugPrint('Sign-up failed: ${response.reasonPhrase}');

@@ -147,7 +147,7 @@ class LoginController with ChangeNotifier {
             phoneNumber: phoneNumber,
             confirmPassword: confirmPassword,
             context: context);
-        Navigator.pushReplacementNamed(context, '/login');
+
       } finally {
         isLoadingSignUp = false;
       }
